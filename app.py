@@ -43,11 +43,11 @@ def dashboard():
         flash("Faça login primeiro")
         return redirect(url_for("index"))
 
-    # 🔹 Buscar consultas do MongoDB
+    # Buscar consultas do MongoDB
     consultas_cursor = consultas_collection.find()
     consultas = [Consulta.from_dict(c) for c in consultas_cursor]
 
-    # 🔹 Calcular estatísticas
+    # Calcular estatísticas
     stats = {
         "scheduled": sum(1 for c in consultas if c.status == "marcado"),
         "waiting": sum(1 for c in consultas if c.status == "aguardando"),
