@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Fila Zero | Gestão de Agendamentos</title>
+    <link rel="stylesheet" href="../styles/dashboard-style.css">
+</head>
+<body>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h1 class="logo">Fila<span>Zero</span></h1>
+            <nav>
+                <ul>
+                    <li class="active"><a href="#">Agendamentos</a></li>
+                    <li><a href="#">Pacientes</a></li>
+                    <li><a href="#">Configurações</a></li>
+                </ul>
+            </nav>
+            <a href="index.html" class="btn-logout">Sair</a>
+        </aside>
+
+
+
+        <main class="main-content">
+            <header>
+                <h2>Olá, Agente de Saúde</h2>
+                <p>Confira as consultas agendadas via WhatsApp hoje.</p>
+            </header>
+
+            <section class="stats">
+                <div class="card">
+                    <h3>12</h3>
+                    <p>Agendados</p>
+                </div>
+                <div class="card">
+                    <h3>5</h3>
+                    <p>Aguardando</p>
+                </div>
+                <div class="card">
+                    <h3>7</h3>
+                    <p>Finalizados</p>
+                </div>
+            </section>
+
+
+            
+            <section class="appointments">
+                <h3>Lista de Consultas</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Horário</th>
+                            <th>Especialidade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>João Silva</td>
+                            <td>09:00</td>
+                            <td>Clínico Geral</td>
+                            <td><span class="status waiting">Aguardando</span></td>
+                            <td><button class="btn-view">Ver</button></td>
+                        </tr>
+                        <tr>
+                            <td>Maria Oliveira</td>
+                            <td>10:30</td>
+                            <td>Pediatria</td>
+                            <td><span class="status confirmed">Confirmado</span></td>
+                            <td><button class="btn-view">Ver</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+</body>
+</html>
