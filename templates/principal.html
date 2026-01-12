@@ -14,9 +14,8 @@
             <h1 class="logo">Fila<span>Zero</span></h1>
             <nav>
                 <ul>
-                    <li class="active"><a href="#">Agendamentos</a></li>
-                    <li><a href="#">Pacientes</a></li>
-                    <li><a href="#">Configurações</a></li>
+                    <li class="active"><a href="{{ url_for('principal') }}">Principal</a></li>
+                    <li><a href="{{ url_for('consultas') }}">Consultas</a></li>
                 </ul>
             </nav>
             <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
@@ -75,6 +74,37 @@
                         {% endfor %}
                     </tbody>
                 </table>
+            </section>
+            <section class="weekly-schedule">
+                <h3>Cronograma da Semana</h3>
+
+                <div class="week-grid">
+                    {% for day in week_days %}
+                    <div class="day-column {% if day.is_today %}active-day{% endif %}">
+                        
+                        <div class="day-header">
+                            {{ day.day_name }}
+                            {% if day.is_today %}(Hoje){% endif %}
+                            <br>
+                            <small>{{ day.date.strftime('%d/%m') }}</small>
+                        </div>
+
+                        <div class="day-content">
+                            {% if day.consultas %}
+                                {% for consulta in day.consultas %}
+                                <div class="mini-card">
+                                    <strong>{{ consulta.scheduled_at.strftime('%H:%M') }}</strong>
+                                    - {{ consulta.client_name }}
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="mini-card empty">Nenhuma consulta</div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    {% endfor %}
+                </div>
             </section>
         </main>
     </div>

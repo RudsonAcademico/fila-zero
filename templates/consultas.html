@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultas | Fila Zero</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-style.css') }}">
+</head>
+<body>
+
+    <div class="container">
+        <aside class="sidebar">
+            <h1 class="logo">Fila<span>Zero</span></h1>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('principal') }}">Principal</a></li>
+                    <li class="active"><a href="{{ url_for('consultas') }}">Consultas</a></li>
+                </ul>
+            </nav>
+            <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
+        </aside>
+
+        <main class="main-content">
+            <header>
+                <h2>Histórico de Consultas</h2>
+                <p>Pesquise por pacientes ou procedimentos realizados.</p>
+            </header>
+
+            <section class="search-area">
+                <input type="text" id="searchBar" placeholder="Digite o nome do paciente ou CPF...">
+                <button class="btn-search">Buscar</button>
+            </section>
+
+            <section class="appointments">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Paciente</th>
+                            <th>Data</th>
+                            <th>Especialidade</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Marcos Souza</td>
+                            <td>10/01/2026</td>
+                            <td>Cardiologia</td>
+                            <td><span class="status confirmed">Finalizado</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+</body>
+</html>
