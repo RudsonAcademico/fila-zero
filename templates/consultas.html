@@ -58,9 +58,10 @@
                             <td>
                                 <span class="status
                                     {% if consulta.status == 'marcado' %}confirmed
-                                    {% elif consulta.status == 'aguardando' %}waiting
+                                    {% elif consulta.status == 'aguardando' or consulta.status == 'adiado' %}waiting
                                     {% elif consulta.status == 'atrasado' %}late
                                     {% elif consulta.status == 'finalizado' %}completed
+                                    {% elif consulta.status == 'cancelado' %}canceled
                                     {% endif %}">
                                     {{ consulta.status | capitalize }}
                                 </span>

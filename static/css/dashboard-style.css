@@ -132,16 +132,27 @@ th {
 }
 
 
+.status.waiting { background-color: #fff9c4; /* amarelo claro */ color: #fbc02d; /* amarelo escuro */ border: 1px solid #fbc02d; }
+
+.status.confirmed { background-color: #c8e6c9; /* verde claro */ color: #388e3c; /* verde escuro */ border: 1px solid #388e3c; }
+
+.status.late { background-color: #dc2626; /* vermelho */ color: #ffffff; /* branco */ border: 1px solid #b71c1c; }
+
+.status.completed { background-color: #bbdefb; /* azul claro */ color: #0d47a1; /* azul escuro */ border: 1px solid #0d47a1; }
+
+.status.canceled { background-color: #fce4ec; /* rosa claro */ color: #c2185b; /* rosa escuro */ border: 1px solid #c2185b; }
+
+/* Estilo geral para todos os status */
 .status {
     padding: 5px 10px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: bold;
+    display: inline-block;
+    text-align: center;
+    min-width: 70px;
 }
 
-.status.waiting { background: #fff9c4; color: #fbc02d; }
-.status.confirmed { background: #c8e6c9; color: #388e3c; }
-.status.late { background-color: #dc2626; color: white; }
 
 .btn-view {
     background: #4db6ac;
@@ -273,4 +284,66 @@ th {
 
 .btn-search:hover {
     background-color: #004d40;
+}
+
+.btn-back {
+    display: inline-block;
+    margin-top: 10px;
+    color: #00796b;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.detail-card {
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 30px;
+}
+.detail-card h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #f4f7f6;
+    padding-bottom: 10px;
+}
+.detail-card p {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #4a6363;
+}
+
+.actions {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+.actions form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-success, .btn-warning, .btn-danger {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: opacity 0.2s;
+    min-width: 120px;
+}
+.btn-success { background-color: #2e7d32; }
+.btn-warning { background-color: #f57c00; }
+.btn-danger { background-color: #d32f2f; }
+.btn-success:hover, .btn-warning:hover, .btn-danger:hover { opacity: 0.8; }
+
+.input-datetime {
+    padding: 8px;
+    border: 1px solid #b2dfdb;
+    border-radius: 5px;
+    outline: none;
 }
