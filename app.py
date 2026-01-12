@@ -12,25 +12,26 @@ from models.user import User
 
 import os
 
-
+# ======== CARREGAR VARIÁVEIS DE AMBIENTE ========
 load_dotenv()
 
+# ======== CONFIGURAÇÃO DO FLASK ========
 app = Flask(__name__)
 app.secret_key = os.getenv("PSW_SECRET")
 app.config["SCHEDULER_API_ENABLED"] = True
 
-# Conexão com MongoDB
+# ======== CONEXÃO COM MONGODB ========
 client = MongoClient(os.getenv("MONGO_URI"))
 db = client["fila_zero"]
 users_collection = db["users"]
 consultas_collection = db["consultas"]
 consulta_repository = ConsultaRepository(consultas_collection)
 
-# Scheduler
+# ======== CONFIGURAÇÃO DO SCHEDULER ========
 scheduler = APScheduler()
 scheduler.init_app(app)
 
-# Job a cada 10 minutos
+# Job para atualizar consultas atrasadas a cada 10 minutos
 scheduler.add_job(
     id="atualizar_atrasadas",
     func=atualizar_consultas_atrasadas,
@@ -42,68 +43,53 @@ scheduler.add_job(
 scheduler.start()
 
 
-# Converter ObjectId para string
+# ======== FUNÇÃO AUXILIAR ========
 def serialize_user(user):
+    """Converte ObjectId do usuário para string para uso na sessão."""
     return {
         "id": str(user["_id"]),
         "name": user["name"],
         "email": user["email"]
     }
 
-# Rotas para Paginas
-@app.route("/", endpoint='login' , methods=["GET"])
+
+# ======== ROTAS DE PÁGINAS ========
+
+@app.route("/", endpoint='login', methods=["GET"])
 def login():
-    session["user_id"] = None
+    """Página de login."""
     session.clear()
     return render_template("login.html")
 
 
 @app.route("/principal")
 def principal():
+    """Dashboard principal com estatísticas e cronograma semanal."""
     if "user_id" not in session:
         flash("Faça login primeiro")
         return redirect(url_for("login"))
 
     # ===== BUSCAR CONSULTAS =====
-    
     consultas_cursor = consultas_collection.find()
     consulta_repository.atualizar_atrasadas()
     consultas = [Consulta.from_dict(c) for c in consultas_cursor]
 
     # ===== STATUS AUTOMÁTICO (ATRASADO) =====
     agora = datetime.now(timezone.utc)
-
     for c in consultas:
         if c.status != "finalizado" and c.data_hora < agora:
             c.status = "atrasado"
 
     # ===== ESTATÍSTICAS =====
     inicio_semana = agora.date() - timedelta(days=agora.weekday())
-
     stats = {
-        # Agendados futuros
-        "scheduled": sum(
-            1 for c in consultas
-            if c.status == "marcado" and c.data_hora >= agora
-        ),
-
-        # Atrasados
-        "waiting": sum(
-            1 for c in consultas
-            if c.status == "atrasado"
-        ),
-
-        # Finalizados essa semana
-        "completed": sum(
-            1 for c in consultas
-            if c.status == "finalizado"
-            and c.data_hora.date() >= inicio_semana
-        ),
+        "scheduled": sum(1 for c in consultas if c.status == "marcado" and c.data_hora >= agora),
+        "waiting": sum(1 for c in consultas if c.status == "atrasado"),
+        "completed": sum(1 for c in consultas if c.status == "finalizado" and c.data_hora.date() >= inicio_semana),
     }
 
-    # ===== CRONOGRAMA DA SEMANA =====
+    # ===== CRONOGRAMA SEMANAL =====
     today = agora.date()
-
     DAYS_PT = {
         0: "Segunda-feira",
         1: "Terça-feira",
@@ -115,15 +101,9 @@ def principal():
     }
 
     week_days = []
-
     for i in range(10):
         day_date = today + timedelta(days=i)
-
-        day_consultas = [
-            c for c in consultas
-            if c.data_hora.date() == day_date
-        ]
-
+        day_consultas = [c for c in consultas if c.data_hora.date() == day_date]
         week_days.append({
             "date": day_date,
             "day_name": DAYS_PT[day_date.weekday()],
@@ -140,17 +120,16 @@ def principal():
     )
 
 
-
 @app.route("/consultas", methods=["GET"])
 def consultas():
+    """Lista de consultas com busca e estatísticas."""
     if "user_id" not in session:
         flash("Faça login primeiro")
         return redirect(url_for("login"))
 
     # ===== BUSCA =====
-    termo = request.args.get("q")  # Pega o valor do campo de busca
+    termo = request.args.get("q")
     filtro = {}
-
     if termo:
         filtro = {
             "$or": [
@@ -163,35 +142,16 @@ def consultas():
 
     # ===== BUSCAR CONSULTAS =====
     consultas_cursor = consultas_collection.find(filtro).sort("data_hora", 1)
-    
-    # Atualizar atrasadas no banco (se houver)
     consulta_repository.atualizar_atrasadas()
-    
-    # Transformar em objetos Consulta
     consultas = [Consulta.from_dict(c) for c in consultas_cursor]
 
     # ===== ESTATÍSTICAS =====
     agora = datetime.now(timezone.utc)
     inicio_semana = agora.date() - timedelta(days=agora.weekday())
-
     stats = {
-        # Agendados futuros
-        "scheduled": sum(
-            1 for c in consultas
-            if c.status == "marcado" and c.data_hora >= agora
-        ),
-
-        # Atrasados
-        "waiting": sum(
-            1 for c in consultas
-            if c.status == "atrasado"
-        ),
-
-        # Finalizados essa semana
-        "completed": sum(
-            1 for c in consultas
-            if c.status == "finalizado" and c.data_hora.date() >= inicio_semana
-        ),
+        "scheduled": sum(1 for c in consultas if c.status == "marcado" and c.data_hora >= agora),
+        "waiting": sum(1 for c in consultas if c.status == "atrasado"),
+        "completed": sum(1 for c in consultas if c.status == "finalizado" and c.data_hora.date() >= inicio_semana),
     }
 
     return render_template(
@@ -199,15 +159,14 @@ def consultas():
         user_nome=session.get("user_nome"),
         consultas=consultas,
         stats=stats,
-        termo=termo  # Para preencher o input de busca com o valor digitado
+        termo=termo
     )
 
 
-
-
-# ======== Rota de login (POST) ========
+# ======== ROTAS DE AUTENTICAÇÃO ========
 @app.route("/login_action", methods=["POST"])
 def login_action():
+    """Processa login do usuário."""
     email = request.form.get("email")
     senha = request.form.get("password")
 
@@ -215,20 +174,18 @@ def login_action():
         flash("Preencha todos os campos")
         return redirect(url_for("login"))
 
-    # Buscar usuário no MongoDB
+    # ===== BUSCAR USUÁRIO =====
     user_data = users_collection.find_one({"email": email})
     if not user_data:
         flash("Usuário não encontrado")
         return redirect(url_for("login"))
 
     user = User.from_dict(user_data)
-
-    # Verificar senha
     if not user.verificar_senha(senha):
         flash("Senha incorreta")
         return redirect(url_for("login"))
 
-    # Login bem-sucedido → salvar na sessão
+    # ===== SALVAR SESSÃO =====
     session.clear()
     session["user_id"] = str(user.id)
     session["user_nome"] = user.nome
@@ -238,43 +195,35 @@ def login_action():
     return redirect(url_for("principal"))
 
 
-# ======== Logout ========
 @app.route("/logout")
 def logout():
+    """Realiza logout do usuário."""
     session.clear()
     flash("Logout realizado com sucesso!")
     return redirect(url_for("login"))
 
 
-# ===========================
-# Rota para ver detalhes
-# ===========================
+# ======== ROTAS DE CONSULTA INDIVIDUAL ========
 @app.route("/consulta/<consulta_id>", methods=["GET"])
 def consulta_detalhes(consulta_id):
+    """Exibe detalhes de uma consulta específica."""
     if "user_id" not in session:
         flash("Faça login primeiro")
         return redirect(url_for("login"))
 
-    # Buscar consulta pelo ID
     consulta_data = consultas_collection.find_one({"_id": ObjectId(consulta_id)})
     if not consulta_data:
         flash("Consulta não encontrada")
         return redirect(url_for("consultas"))
 
     consulta = Consulta.from_dict(consulta_data)
-
-    return render_template(
-        "consulta_detalhes.html",
-        user_nome=session.get("user_nome"),
-        consulta=consulta
-    )
+    return render_template("consulta_detalhes.html", user_nome=session.get("user_nome"), consulta=consulta)
 
 
-# ===========================
-# Rota para finalizar
-# ===========================
+# ======== ROTAS DE AÇÕES SOBRE CONSULTA ========
 @app.route("/consulta/<consulta_id>/finalizar", methods=["POST"])
 def finalizar_consulta(consulta_id):
+    """Finaliza uma consulta."""
     consulta_data = consultas_collection.find_one({"_id": ObjectId(consulta_id)})
     if not consulta_data:
         flash("Consulta não encontrada")
@@ -282,24 +231,21 @@ def finalizar_consulta(consulta_id):
 
     consulta = Consulta.from_dict(consulta_data)
     consulta.finalizar()
-    consulta_repository.atualizar(consulta)  # Atualiza no MongoDB
+    consulta_repository.atualizar(consulta)
 
     flash("Consulta finalizada com sucesso!")
     return redirect(url_for("consulta_detalhes", consulta_id=consulta_id))
 
 
-# ===========================
-# Rota para adiar
-# ===========================
 @app.route("/consulta/<consulta_id>/adiar", methods=["POST"])
 def adiar_consulta(consulta_id):
+    """Adia uma consulta para nova data e hora."""
     nova_data_hora_str = request.form.get("nova_data_hora")
     if not nova_data_hora_str:
         flash("Informe a nova data e hora")
         return redirect(url_for("consulta_detalhes", consulta_id=consulta_id))
 
     nova_data_hora = datetime.fromisoformat(nova_data_hora_str)
-
     consulta_data = consultas_collection.find_one({"_id": ObjectId(consulta_id)})
     if not consulta_data:
         flash("Consulta não encontrada")
@@ -313,11 +259,9 @@ def adiar_consulta(consulta_id):
     return redirect(url_for("consulta_detalhes", consulta_id=consulta_id))
 
 
-# ===========================
-# Rota para cancelar
-# ===========================
 @app.route("/consulta/<consulta_id>/cancelar", methods=["POST"])
 def cancelar_consulta(consulta_id):
+    """Cancela uma consulta."""
     consulta_data = consultas_collection.find_one({"_id": ObjectId(consulta_id)})
     if not consulta_data:
         flash("Consulta não encontrada")
@@ -330,5 +274,7 @@ def cancelar_consulta(consulta_id):
     flash("Consulta cancelada com sucesso!")
     return redirect(url_for("consulta_detalhes", consulta_id=consulta_id))
 
+
+# ======== EXECUÇÃO DO APP ========
 if __name__ == "__main__":
     app.run(debug=True)
