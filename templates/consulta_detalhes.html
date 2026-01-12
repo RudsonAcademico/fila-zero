@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Consulta | Fila Zero</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h1 class="logo">Fila<span>Zero</span></h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('principal') }}">Principal</a></li>
+                <li><a href="{{ url_for('consultas') }}">Consultas</a></li>
+            </ul>
+        </nav>
+        <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
+    </aside>
+
+    <!-- Main -->
+    <main class="main-content">
+        <header>
+            <h2>Detalhes da Consulta</h2>
+            <p>Informações completas sobre o agendamento.</p>
+            <a href="{{ url_for('consultas') }}" class="btn-back">← Voltar</a>
+        </header>
+
+        <section class="consulta-details">
+            <div class="card detail-card">
+                <!-- Informações do paciente -->
+                <h3>{{ consulta.nome_paciente }}</h3>
+                <p><strong>CPF:</strong> {{ consulta.cpf_paciente }}</p>
+                <p><strong>Telefone:</strong> {{ consulta.telefone }}</p>
+                <p><strong>Tipo de Consulta:</strong> {{ consulta.tipo_consulta | capitalize }}</p>
+                <p><strong>Data e Hora:</strong> {{ consulta.data_hora.strftime('%d/%m/%Y %H:%M') }}</p>
+
+                <!-- Status -->
+                <p><strong>Status:</strong> 
+                    <span class="status
+                        {% if consulta.status == 'marcado' %}confirmed
+                        {% elif consulta.status == 'aguardando' %}waiting
+                        {% elif consulta.status == 'atrasado' %}late
+                        {% elif consulta.status == 'finalizado' %}completed
+                        {% elif consulta.status == 'cancelado' %}canceled
+                        {% endif %}">
+                        {{ consulta.status | capitalize }}
+                    </span>
+                </p>
+
+                <!-- Ações -->
+                <div class="actions">
+                    {% if consulta.status not in ['finalizado', 'cancelado'] %}
+                        <form method="POST" action="{{ url_for('finalizar_consulta', consulta_id=consulta.id) }}">
+                            <button type="submit" class="btn-success">Finalizar</button>
+                        </form>
+
+                        <form method="POST" action="{{ url_for('adiar_consulta', consulta_id=consulta.id) }}">
+                            <input type="datetime-local" name="nova_data_hora" required class="input-datetime">
+                            <button type="submit" class="btn-warning">Adiar</button>
+                        </form>
+
+                        <form method="POST" action="{{ url_for('cancelar_consulta', consulta_id=consulta.id) }}">
+                            <button type="submit" class="btn-danger">Cancelar</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

@@ -27,8 +27,15 @@
             </header>
 
             <section class="search-area">
-                <input type="text" id="searchBar" placeholder="Digite o nome do paciente ou CPF...">
-                <button class="btn-search">Buscar</button>
+                <form method="GET" action="{{ url_for('consultas') }}">
+                    <input
+                        type="text"
+                        name="q"
+                        placeholder="Nome, CPF, telefone ou especialidade"
+                        value="{{ request.args.get('q', '') }}"
+                    >
+                    <button type="submit" class="btn-search">Buscar</button>
+                </form>
             </section>
 
             <section class="appointments">
@@ -36,18 +43,33 @@
                     <thead>
                         <tr>
                             <th>Paciente</th>
-                            <th>Data</th>
+                            <th>Horário</th>
                             <th>Especialidade</th>
                             <th>Status</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Marcos Souza</td>
-                            <td>10/01/2026</td>
-                            <td>Cardiologia</td>
-                            <td><span class="status confirmed">Finalizado</span></td>
+                    {% for consulta in consultas %}
+                        <tr class="{% if consulta.status == 'atrasado' %}row-late{% endif %}">
+                            <td>{{ consulta.nome_paciente }}</td>
+                            <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
+                            <td>{{ consulta.tipo_consulta | capitalize }}</td>
+                            <td>
+                                <span class="status
+                                    {% if consulta.status == 'marcado' %}confirmed
+                                    {% elif consulta.status == 'aguardando' %}waiting
+                                    {% elif consulta.status == 'atrasado' %}late
+                                    {% elif consulta.status == 'finalizado' %}completed
+                                    {% endif %}">
+                                    {{ consulta.status | capitalize }}
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('consulta_detalhes', consulta_id=consulta.id) }}" class="btn-view">Ver</a>
+                            </td>
                         </tr>
+                    {% endfor %}
                     </tbody>
                 </table>
             </section>

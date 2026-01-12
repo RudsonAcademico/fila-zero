@@ -10,9 +10,14 @@ body {
     color: #334e4e;
 }
 
+a {
+    text-decoration: none;
+}
+
 .container {
     display: flex;
     min-height: 100vh;
+    height: auto;
 }
 
 /* Menu Lateral */
@@ -23,6 +28,7 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
+    height: auto;
 }
 
 .sidebar .logo {
@@ -204,6 +210,21 @@ th {
     color: #00796b;
 }
 
+.mini-card-late {
+    background: #ffebee;
+    margin-bottom: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    color: #b71c1c;
+    border-left: 4px solid #d32f2f;
+    box-shadow: 0 2px 6px rgba(211, 47, 47, 0.25);
+}
+
+.mini-card-late strong {
+    color: #c62828;
+}
+
 .mini-card.empty {
     background: transparent;
     border-left: none;
@@ -221,6 +242,7 @@ th {
     padding: 15px;
     border-radius: 10px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    justify-content: space-around;
 }
 
 .search-area input {
@@ -229,6 +251,7 @@ th {
     border: 2px solid #b2dfdb;
     border-radius: 8px;
     outline: none;
+    width: 60vw;
 }
 
 .search-area input:focus {
@@ -236,6 +259,8 @@ th {
 }
 
 .btn-search {
+    width: 10vw;
+    height: 6vh;
     background-color: #00796b;
     color: white;
     border: none;
@@ -243,6 +268,7 @@ th {
     border-radius: 8px;
     cursor: pointer;
     font-weight: bold;
+    align-items: center;    
 }
 
 .btn-search:hover {

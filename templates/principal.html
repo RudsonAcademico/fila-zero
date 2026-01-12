@@ -44,45 +44,6 @@
             </div>
         </section>
 
-        <!-- Lista de consultas -->
-        <section class="appointments">
-            <h3>Lista de Consultas</h3>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Paciente</th>
-                        <th>Horário</th>
-                        <th>Especialidade</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for consulta in consultas %}
-                    <tr class="{% if consulta.status == 'atrasado' %}row-late{% endif %}">
-                        <td>{{ consulta.nome_paciente }}</td>
-                        <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
-                        <td>{{ consulta.tipo_consulta | capitalize }}</td>
-                        <td>
-                            <span class="status
-                                {% if consulta.status == 'marcado' %}confirmed
-                                {% elif consulta.status == 'aguardando' %}waiting
-                                {% elif consulta.status == 'atrasado' %}late
-                                {% elif consulta.status == 'finalizado' %}completed
-                                {% endif %}">
-                                {{ consulta.status | capitalize }}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn-view">Ver</button>
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </section>
-
         <!-- Cronograma semanal -->
         <section class="weekly-schedule">
             <h3>Cronograma da Semana</h3>
@@ -101,10 +62,10 @@
                     <div class="day-content">
                         {% if day.consultas %}
                             {% for consulta in day.consultas %}
-                            <div class="mini-card {% if consulta.status == 'atrasado' %}late{% endif %}">
+                            <a href="{{ url_for('consulta_detalhes', consulta_id=consulta.id) }}" class="mini-card{% if consulta.status == 'atrasado' %}-late{% endif %}">
                                 <strong>{{ consulta.data_hora.strftime('%H:%M') }}</strong>
                                 – {{ consulta.nome_paciente }}
-                            </div>
+                            </a>
                             {% endfor %}
                         {% else %}
                             <div class="mini-card empty">Nenhuma consulta</div>
