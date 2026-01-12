@@ -8,105 +8,115 @@
 </head>
 <body>
 
-    <div class="container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <h1 class="logo">Fila<span>Zero</span></h1>
-            <nav>
-                <ul>
-                    <li class="active"><a href="{{ url_for('principal') }}">Principal</a></li>
-                    <li><a href="{{ url_for('consultas') }}">Consultas</a></li>
-                </ul>
-            </nav>
-            <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
-        </aside>
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h1 class="logo">Fila<span>Zero</span></h1>
+        <nav>
+            <ul>
+                <li class="active"><a href="{{ url_for('principal') }}">Principal</a></li>
+                <li><a href="{{ url_for('consultas') }}">Consultas</a></li>
+            </ul>
+        </nav>
+        <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
+    </aside>
 
-        <!-- Main -->
-        <main class="main-content">
-            <header>
-                <h2>Olá, {{ user_name }}</h2>
-                <p>Confira as consultas agendadas via WhatsApp hoje.</p>
-            </header>
+    <!-- Main -->
+    <main class="main-content">
+        <header>
+            <h2>Olá, {{ user_nome }}</h2>
+            <p>Confira o panorama das consultas.</p>
+        </header>
 
-            <!-- Estatísticas -->
-            <section class="stats">
-                <div class="card">
-                    <h3>{{ stats.scheduled }}</h3>
-                    <p>Agendados</p>
-                </div>
-                <div class="card">
-                    <h3>{{ stats.waiting }}</h3>
-                    <p>Aguardando</p>
-                </div>
-                <div class="card">
-                    <h3>{{ stats.completed }}</h3>
-                    <p>Finalizados</p>
-                </div>
-            </section>
+        <!-- Estatísticas -->
+        <section class="stats">
+            <div class="card">
+                <h3>{{ stats.scheduled }}</h3>
+                <p>Agendados</p>
+            </div>
+            <div class="card warning">
+                <h3>{{ stats.waiting }}</h3>
+                <p>Atrasados</p>
+            </div>
+            <div class="card success">
+                <h3>{{ stats.completed }}</h3>
+                <p>Finalizados essa semana</p>
+            </div>
+        </section>
 
-            <!-- Lista de consultas -->
-            <section class="appointments">
-                <h3>Lista de Consultas</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Paciente</th>
-                            <th>Horário</th>
-                            <th>Especialidade</th>
-                            <th>Status</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for consulta in consultas %}
-                        <tr>
-                            <td>{{ consulta.client_name }}</td>
-                            <td>{{ consulta.scheduled_at.strftime('%H:%M') }}</td>
-                            <td>{{ consulta.consultation_type | capitalize }}</td>
-                            <td>
-                                <span class="status 
-                                    {% if consulta.status == 'aguardando' %}waiting{% elif consulta.status == 'marcado' %}confirmed{% elif consulta.status == 'finalizado' %}completed{% endif %}">
-                                    {{ consulta.status | capitalize }}
-                                </span>
-                            </td>
-                            <td><button class="btn-view">Ver</button></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </section>
-            <section class="weekly-schedule">
-                <h3>Cronograma da Semana</h3>
+        <!-- Lista de consultas -->
+        <section class="appointments">
+            <h3>Lista de Consultas</h3>
 
-                <div class="week-grid">
-                    {% for day in week_days %}
-                    <div class="day-column {% if day.is_today %}active-day{% endif %}">
-                        
-                        <div class="day-header">
-                            {{ day.day_name }}
-                            {% if day.is_today %}(Hoje){% endif %}
-                            <br>
-                            <small>{{ day.date.strftime('%d/%m') }}</small>
-                        </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Paciente</th>
+                        <th>Horário</th>
+                        <th>Especialidade</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for consulta in consultas %}
+                    <tr class="{% if consulta.status == 'atrasado' %}row-late{% endif %}">
+                        <td>{{ consulta.nome_paciente }}</td>
+                        <td>{{ consulta.data_hora.strftime('%H:%M') }}</td>
+                        <td>{{ consulta.tipo_consulta | capitalize }}</td>
+                        <td>
+                            <span class="status
+                                {% if consulta.status == 'marcado' %}confirmed
+                                {% elif consulta.status == 'aguardando' %}waiting
+                                {% elif consulta.status == 'atrasado' %}late
+                                {% elif consulta.status == 'finalizado' %}completed
+                                {% endif %}">
+                                {{ consulta.status_atual() | capitalize }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn-view">Ver</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </section>
 
-                        <div class="day-content">
-                            {% if day.consultas %}
-                                {% for consulta in day.consultas %}
-                                <div class="mini-card">
-                                    <strong>{{ consulta.scheduled_at.strftime('%H:%M') }}</strong>
-                                    - {{ consulta.client_name }}
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <div class="mini-card empty">Nenhuma consulta</div>
-                            {% endif %}
-                        </div>
+        <!-- Cronograma semanal -->
+        <section class="weekly-schedule">
+            <h3>Cronograma da Semana</h3>
 
+            <div class="week-grid">
+                {% for day in week_days %}
+                <div class="day-column {% if day.is_today %}active-day{% endif %}">
+                    
+                    <div class="day-header">
+                        {{ day.day_name }}
+                        {% if day.is_today %}(Hoje){% endif %}
+                        <br>
+                        <small>{{ day.date.strftime('%d/%m') }}</small>
                     </div>
-                    {% endfor %}
+
+                    <div class="day-content">
+                        {% if day.consultas %}
+                            {% for consulta in day.consultas %}
+                            <div class="mini-card {% if consulta.status == 'atrasado' %}late{% endif %}">
+                                <strong>{{ consulta.data_hora.strftime('%H:%M') }}</strong>
+                                – {{ consulta.nome_paciente }}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="mini-card empty">Nenhuma consulta</div>
+                        {% endif %}
+                    </div>
+
                 </div>
-            </section>
-        </main>
-    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</div>
+
 </body>
 </html>

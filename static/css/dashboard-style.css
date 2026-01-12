@@ -133,8 +133,9 @@ th {
     font-weight: bold;
 }
 
-.waiting { background: #fff9c4; color: #fbc02d; }
-.confirmed { background: #c8e6c9; color: #388e3c; }
+.status.waiting { background: #fff9c4; color: #fbc02d; }
+.status.confirmed { background: #c8e6c9; color: #388e3c; }
+.status.late { background-color: #dc2626; color: white; }
 
 .btn-view {
     background: #4db6ac;

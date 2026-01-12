@@ -15,7 +15,7 @@ app.secret_key = os.getenv("PSW_SECRET")
 
 # Conexão com MongoDB
 client = MongoClient(os.getenv("MONGO_URI"))
-db = client["flaskdb"]
+db = client["fila_zero"]
 users_collection = db["users"]
 consultas_collection = db["consultas"]
 
@@ -41,23 +41,46 @@ def login():
 def principal():
     if "user_id" not in session:
         flash("Faça login primeiro")
-        return redirect(url_for("login_page"))
+        return redirect(url_for("login"))
 
-    # Buscar consultas
+    # ===== BUSCAR CONSULTAS =====
     consultas_cursor = consultas_collection.find()
     consultas = [Consulta.from_dict(c) for c in consultas_cursor]
 
-    # Estatísticas
+    # ===== STATUS AUTOMÁTICO (ATRASADO) =====
+    agora = datetime.now(timezone.utc)
+
+    for c in consultas:
+        if c.status != "finalizado" and c.data_hora < agora:
+            c.status = "atrasado"
+
+    # ===== ESTATÍSTICAS =====
+    inicio_semana = agora.date() - timedelta(days=agora.weekday())
+
     stats = {
-        "scheduled": sum(1 for c in consultas if c.status == "marcado"),
-        "waiting": sum(1 for c in consultas if c.status == "aguardando"),
-        "completed": sum(1 for c in consultas if c.status == "finalizado")
+        # Agendados futuros
+        "scheduled": sum(
+            1 for c in consultas
+            if c.status == "marcado" and c.data_hora >= agora
+        ),
+
+        # Atrasados
+        "waiting": sum(
+            1 for c in consultas
+            if c.status == "atrasado"
+        ),
+
+        # Finalizados essa semana
+        "completed": sum(
+            1 for c in consultas
+            if c.status == "finalizado"
+            and c.data_hora.date() >= inicio_semana
+        ),
     }
 
     # ===== CRONOGRAMA DA SEMANA =====
-    today = datetime.now(timezone.utc).date()
+    today = agora.date()
 
-    week_days = []
     DAYS_PT = {
         0: "Segunda-feira",
         1: "Terça-feira",
@@ -68,28 +91,31 @@ def principal():
         6: "Domingo",
     }
 
+    week_days = []
+
     for i in range(7):
         day_date = today + timedelta(days=i)
 
         day_consultas = [
             c for c in consultas
-            if c.scheduled_at.date() == day_date
+            if c.data_hora.date() == day_date
         ]
 
         week_days.append({
             "date": day_date,
             "day_name": DAYS_PT[day_date.weekday()],
             "is_today": day_date == today,
-            "consultas": sorted(day_consultas, key=lambda x: x.scheduled_at)
+            "consultas": sorted(day_consultas, key=lambda x: x.data_hora)
         })
 
     return render_template(
         "principal.html",
-        user_name=session.get("user_name"),
+        user_nome=session.get("user_nome"),
         consultas=consultas,
         stats=stats,
         week_days=week_days
     )
+
 
 
 @app.route("/consultas", methods=["GET"])
@@ -104,10 +130,14 @@ def consultas():
 # ======== Rota de login (POST) ========
 @app.route("/login_action", methods=["POST"])
 def login_action():
-    email = request.form["email"]
-    password = request.form["password"]
+    email = request.form.get("email")
+    senha = request.form.get("password")
 
-    # Busca usuário no MongoDB
+    if not email or not senha:
+        flash("Preencha todos os campos")
+        return redirect(url_for("login"))
+
+    # Buscar usuário no MongoDB
     user_data = users_collection.find_one({"email": email})
     if not user_data:
         flash("Usuário não encontrado")
@@ -115,18 +145,20 @@ def login_action():
 
     user = User.from_dict(user_data)
 
-    # Verifica senha
-    if not user.check_password(password):
+    # Verificar senha
+    if not user.verificar_senha(senha):
         flash("Senha incorreta")
         return redirect(url_for("login"))
 
-    # Login bem-sucedido → salva dados na session
+    # Login bem-sucedido → salvar na sessão
+    session.clear()
     session["user_id"] = str(user.id)
-    session["user_name"] = user.name
-    session["user_role"] = user.role
+    session["user_nome"] = user.nome
+    session["user_papel"] = user.papel
 
-    flash(f"Bem-vindo, {user.name}!")
+    flash(f"Bem-vindo, {user.nome}!")
     return redirect(url_for("principal"))
+
 
 # ======== Logout ========
 @app.route("/logout")

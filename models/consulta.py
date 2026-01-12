@@ -1,84 +1,118 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from bson import ObjectId
 
 
 class Consulta:
-    def __init__( self, client_name: str, phone: str, consultation_type: str, scheduled_at: datetime, _id: ObjectId = None, created_at: datetime = None, status: str = "marcado" ):
+    def __init__(
+        self,
+        nome_paciente: str,
+        cpf_paciente: str,
+        telefone: str,
+        tipo_consulta: str,
+        data_hora: datetime,
+        status: str = "marcado",
+        _id: ObjectId = None,
+        criado_em: datetime = None
+    ):
         self.id = _id
-        self.client_name = client_name
-        self.phone = phone
-        self.consultation_type = consultation_type
-        self.scheduled_at = scheduled_at
+        self.nome_paciente = nome_paciente
+        self.cpf_paciente = cpf_paciente
+        self.telefone = telefone
+        self.tipo_consulta = tipo_consulta
+        self.data_hora = data_hora
         self.status = status
-        self.created_at = created_at or datetime.now(timezone.utc)
+        self.criado_em = criado_em or datetime.now(timezone.utc)
 
-
-    # Criar consulta nova (regra centralizada)
+    # ===============================
+    # Factory (criação controlada)
+    # ===============================
     @classmethod
-    def create(cls, client_name, phone, consultation_type, scheduled_at):
+    def criar(cls, nome_paciente, cpf_paciente, telefone, tipo_consulta, data_hora):
         """
-        Cria uma nova Consulta com status inicial 'marcado'
+        Cria uma nova consulta com status inicial 'marcado'
         """
         return cls(
-            client_name=client_name,
-            phone=phone,
-            consultation_type=consultation_type,
-            scheduled_at=scheduled_at,
+            nome_paciente=nome_paciente,
+            cpf_paciente=cpf_paciente,
+            telefone=telefone,
+            tipo_consulta=tipo_consulta,
+            data_hora=data_hora,
             status="marcado"
         )
 
-    def to_dict(self):
-        return {
-            "client_name": self.client_name,
-            "phone": self.phone,
-            "consultation_type": self.consultation_type,
-            "scheduled_at": self.scheduled_at,
-            "status": self.status,
-            "created_at": self.created_at
-        }
-
-    # Ações de domínio (mudança de status)
+    # ===============================
+    # Regras de domínio
+    # ===============================
     def cancelar(self):
         self.status = "cancelado"
 
-    def adiar(self, nova_data: datetime):
-        self.scheduled_at = nova_data
+    def adiar(self, nova_data_hora: datetime):
+        self.data_hora = nova_data_hora
         self.status = "adiado"
 
+    def finalizar(self):
+        self.status = "finalizado"
+
+    # ===============================
     # MongoDB
+    # ===============================
     def to_dict(self):
         data = {
-            "client_name": self.client_name,
-            "phone": self.phone,
-            "consultation_type": self.consultation_type,
-            "scheduled_at": self.scheduled_at,
+            "nome_paciente": self.nome_paciente,
+            "cpf_paciente": self.cpf_paciente,
+            "telefone": self.telefone,
+            "tipo_consulta": self.tipo_consulta,
+            "data_hora": self.data_hora,
             "status": self.status,
-            "created_at": self.created_at
+            "criado_em": self.criado_em
         }
+
         if self.id:
             data["_id"] = self.id
+
         return data
 
     @classmethod
-    def from_dict(cls, data: dict):
+    def from_dict(cls, data):
+        data_hora = data.get("data_hora")
+
+        if data_hora and data_hora.tzinfo is None:
+            data_hora = data_hora.replace(tzinfo=timezone.utc)
+
         return cls(
             _id=data.get("_id"),
-            client_name=data.get("client_name"),
-            phone=data.get("phone"),
-            consultation_type=data.get("consultation_type"),
-            scheduled_at=data.get("scheduled_at"),
+            nome_paciente=data.get("nome_paciente"),
+            cpf_paciente=data.get("cpf_paciente"),
+            telefone=data.get("telefone"),
+            tipo_consulta=data.get("tipo_consulta"),
+            data_hora=data_hora,
             status=data.get("status", "marcado"),
-            created_at=data.get("created_at")
+            criado_em=data.get("criado_em"),
         )
 
-    # Retorno para API
+
+    # ===============================
+    # Retorno seguro (API / Front)
+    # ===============================
     def serialize(self):
         return {
             "id": str(self.id) if self.id else None,
-            "client_name": self.client_name,
-            "phone": self.phone,
-            "consultation_type": self.consultation_type,
-            "scheduled_at": self.scheduled_at.isoformat(),
+            "nome_paciente": self.nome_paciente,
+            "cpf_paciente": self.cpf_paciente,
+            "telefone": self.telefone,
+            "tipo_consulta": self.tipo_consulta,
+            "data_hora": self.data_hora.isoformat(),
             "status": self.status,
-            "created_at": self.created_at.isoformat()
+            "criado_em": self.criado_em.isoformat()
         }
+    
+    def status_atual(self):
+        if self.status == "finalizado":
+            return "finalizado"
+
+        agora = datetime.now(timezone.utc)
+
+        if self.data_hora < agora:
+            return "atrasado"
+
+        return self.status
