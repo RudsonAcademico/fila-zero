@@ -71,7 +71,7 @@
                                 {% elif consulta.status == 'atrasado' %}late
                                 {% elif consulta.status == 'finalizado' %}completed
                                 {% endif %}">
-                                {{ consulta.status_atual() | capitalize }}
+                                {{ consulta.status | capitalize }}
                             </span>
                         </td>
                         <td>

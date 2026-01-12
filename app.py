@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from datetime import datetime, timezone, timedelta
+from repositories.consulta_repository import ConsultaRepository
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
@@ -18,6 +19,7 @@ client = MongoClient(os.getenv("MONGO_URI"))
 db = client["fila_zero"]
 users_collection = db["users"]
 consultas_collection = db["consultas"]
+consulta_repository = ConsultaRepository(consultas_collection)
 
 
 
@@ -44,7 +46,9 @@ def principal():
         return redirect(url_for("login"))
 
     # ===== BUSCAR CONSULTAS =====
+    
     consultas_cursor = consultas_collection.find()
+    consulta_repository.atualizar_atrasadas()
     consultas = [Consulta.from_dict(c) for c in consultas_cursor]
 
     # ===== STATUS AUTOMÁTICO (ATRASADO) =====
@@ -93,7 +97,7 @@ def principal():
 
     week_days = []
 
-    for i in range(7):
+    for i in range(10):
         day_date = today + timedelta(days=i)
 
         day_consultas = [

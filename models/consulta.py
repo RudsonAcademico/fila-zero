@@ -105,14 +105,3 @@ class Consulta:
             "status": self.status,
             "criado_em": self.criado_em.isoformat()
         }
-    
-    def status_atual(self):
-        if self.status == "finalizado":
-            return "finalizado"
-
-        agora = datetime.now(timezone.utc)
-
-        if self.data_hora < agora:
-            return "atrasado"
-
-        return self.status
