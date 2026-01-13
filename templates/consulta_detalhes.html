@@ -42,7 +42,7 @@
                 <p><strong>Status:</strong> 
                     <span class="status
                         {% if consulta.status == 'marcado' %}confirmed
-                        {% elif consulta.status == 'aguardando' %}waiting
+                        {% elif consulta.status == 'adiado' %}waiting
                         {% elif consulta.status == 'atrasado' %}late
                         {% elif consulta.status == 'finalizado' %}completed
                         {% elif consulta.status == 'cancelado' %}canceled

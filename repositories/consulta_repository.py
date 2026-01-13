@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from bson import ObjectId
 
 class ConsultaRepository:
     def __init__(self, collection):
@@ -28,7 +27,7 @@ class ConsultaRepository:
 
         resultado = self.collection.update_many(
             {
-                "status": {"$in": ["marcado", "aguardando"]},
+                "status": {"$in": ["marcado", "adiado"]},
                 "data_hora": {"$lt": agora}
             },
             {

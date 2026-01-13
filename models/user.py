@@ -51,32 +51,3 @@ class User:
     # ===============================
     def verificar_senha(self, senha: str) -> bool:
         return check_password_hash(self.senha_hash, senha)
-
-    # ===============================
-    # MongoDB
-    # ===============================
-    def to_dict(self):
-        data = {
-            "nome": self.nome,
-            "email": self.email,
-            "senha_hash": self.senha_hash,
-            "papel": self.papel,
-            "ativo": self.ativo,
-            "criado_em": self.criado_em
-        }
-        if self.id:
-            data["_id"] = self.id
-        return data
-
-    # ===============================
-    # Retorno seguro
-    # ===============================
-    def serialize(self):
-        return {
-            "id": str(self.id) if self.id else None,
-            "nome": self.nome,
-            "email": self.email,
-            "papel": self.papel,
-            "ativo": self.ativo,
-            "criado_em": self.criado_em.isoformat()
-        }

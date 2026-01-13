@@ -83,7 +83,7 @@ def principal():
     # ===== ESTATÍSTICAS =====
     inicio_semana = agora.date() - timedelta(days=agora.weekday())
     stats = {
-        "scheduled": sum(1 for c in consultas if c.status == "marcado" and c.data_hora >= agora),
+        "scheduled": sum(1 for c in consultas if (c.status == "marcado" and c.data_hora >= agora) or (c.status == "adiado")),
         "waiting": sum(1 for c in consultas if c.status == "atrasado"),
         "completed": sum(1 for c in consultas if c.status == "finalizado" and c.data_hora.date() >= inicio_semana),
     }
