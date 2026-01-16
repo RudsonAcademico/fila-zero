@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Fila Zero | Registrar Usuário</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Mesmo CSS do dashboard -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+        <h1 class="logo">Fila<span>Zero</span></h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('principal') }}">Principal</a></li>
+                <li><a href="{{ url_for('consultas') }}">Consultas</a></li>
+                <li class="active"><a href="{{ url_for('register') }}">Registrar Usuário</a></li>
+                <li><a href="{{ url_for('registrar_consultas') }}">Registrar Consulta</a></li>
+            </ul>
+        </nav>
+        <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
+    </aside>
+
+    <!-- ===== MAIN ===== -->
+    <main class="main-content">
+        <header>
+            <h2>Cadastro de Usuário</h2>
+            <p>Registre um novo funcionário no sistema</p>
+        </header>
+
+        <!-- ===== CARD DE REGISTRO ===== -->
+        <section class="stats">
+            <div class="card" style="max-width: 480px;">
+                <h3>Novo Usuário</h3>
+
+                <!-- Mensagens Flash -->
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <ul class="flash-messages">
+                            {% for msg in messages %}
+                                <li>{{ msg }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+
+                <!-- FORMULÁRIO -->
+                <form method="POST" action="{{ url_for('register_action') }}">
+                    
+                    <div class="form-group">
+                        <label for="name">Nome</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Senha</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Papel</label>
+                        <select id="role" name="role" required>
+                            <option value="funcionario">Funcionário</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="margin-top: 1rem; width: 100%;">
+                        Registrar
+                    </button>
+
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

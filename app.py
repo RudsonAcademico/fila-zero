@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from bson import ObjectId
 
 from repositories.consulta_repository import ConsultaRepository
+from repositories.user_repository import UserRepository
 from jobs.atualizar_atrasadas import atualizar_consultas_atrasadas
 from models.consulta import Consulta
 from models.user import User
@@ -25,6 +26,8 @@ client = MongoClient(os.getenv("MONGO_URI"))
 db = client["fila_zero"]
 users_collection = db["users"]
 consultas_collection = db["consultas"]
+
+user_repository = UserRepository(users_collection)
 consulta_repository = ConsultaRepository(consultas_collection)
 
 # ======== CONFIGURAÇÃO DO SCHEDULER ========
@@ -60,6 +63,7 @@ def login():
     """Página de login."""
     session.clear()
     return render_template("login.html")
+
 
 
 @app.route("/principal")
@@ -113,11 +117,24 @@ def principal():
 
     return render_template(
         "principal.html",
+        user_papel=session.get("user_papel"),
         user_nome=session.get("user_nome"),
         consultas=consultas,
         stats=stats,
         week_days=week_days
     )
+
+@app.route("/registrar_consultas", methods=["GET"])
+def registrar_consultas():
+    if "user_id" not in session:
+        flash("Faça login primeiro")
+        return redirect(url_for("login"))
+
+    return render_template(
+        "registrar_consultas.html",
+        user_papel=session.get("user_papel")
+    )
+
 
 
 @app.route("/consultas", methods=["GET"])
@@ -156,11 +173,30 @@ def consultas():
 
     return render_template(
         "consultas.html",
+        user_papel=session.get("user_papel"),
         user_nome=session.get("user_nome"),
         consultas=consultas,
         stats=stats,
         termo=termo
     )
+
+
+
+@app.route("/register", methods=["GET"])
+def register():
+    if "user_id" not in session:
+        flash("Faça login primeiro")
+        return redirect(url_for("login"))
+
+    if session.get("user_papel") != "admin":
+        flash("Acesso restrito a administradores")
+        return redirect(url_for("principal"))
+
+    return render_template(
+        "register.html",
+        user_nome=session.get("user_nome")
+    )
+
 
 
 # ======== ROTAS DE AUTENTICAÇÃO ========
@@ -195,12 +231,78 @@ def login_action():
     return redirect(url_for("principal"))
 
 
+
+@app.route("/register_action", methods=["POST"])
+def register_action():
+    """Processa o registro de um usuário."""
+    nome = request.form.get("name")
+    papel = request.form.get("role")
+    email = request.form.get("email")
+    senha = request.form.get("password")
+    user_data = users_collection.find_one({"email": email})
+    if user_data:
+        flash("Email já cadastrado")
+        return redirect(url_for("register"))
+    
+    funcionario = User.criar(
+        nome=nome,
+        email=email,
+        senha=senha,
+        papel=papel
+    )
+
+    user_repository.salvar(funcionario)
+
+    return redirect(url_for("register"))
+
+
+
+@app.route("/registrar-consulta-action", methods=["POST"])
+def registrar_consulta_action():
+
+    # ===== COLETAR DADOS DO FORM =====
+    nome_paciente = request.form.get("nome_paciente")
+    cpf_paciente = request.form.get("cpf_paciente")
+    telefone = request.form.get("telefone")
+    tipo_consulta = request.form.get("tipo_consulta")
+    data_hora_str = request.form.get("data_hora")
+
+    # ===== VALIDAÇÃO =====
+    if not all([nome_paciente, cpf_paciente, telefone, tipo_consulta, data_hora_str]):
+        flash("Preencha todos os campos")
+        return redirect(url_for("registrar_consultas"))
+
+    # Converter data/hora
+    try:
+        data_hora = datetime.fromisoformat(data_hora_str)
+    except ValueError:
+        flash("Data e hora inválidas")
+        return redirect(url_for("registrar_consultas"))
+
+    # ===== CRIAR CONSULTA =====
+    consulta = Consulta.criar(
+        nome_paciente=nome_paciente,
+        cpf_paciente=cpf_paciente,
+        telefone=telefone,
+        tipo_consulta=tipo_consulta,
+        data_hora=data_hora
+    )
+
+    # ===== SALVAR NO BANCO =====
+    consulta_repository.salvar(consulta)
+
+    flash("Consulta registrada com sucesso!")
+    return redirect(url_for("registrar_consultas"))
+
+
+
 @app.route("/logout")
 def logout():
     """Realiza logout do usuário."""
     session.clear()
     flash("Logout realizado com sucesso!")
     return redirect(url_for("login"))
+
 
 
 # ======== ROTAS DE CONSULTA INDIVIDUAL ========
@@ -217,7 +319,8 @@ def consulta_detalhes(consulta_id):
         return redirect(url_for("consultas"))
 
     consulta = Consulta.from_dict(consulta_data)
-    return render_template("consulta_detalhes.html", user_nome=session.get("user_nome"), consulta=consulta)
+    return render_template("consulta_detalhes.html", user_nome=session.get("user_nome"), consulta=consulta, user_papel=session.get("user_papel"))
+
 
 
 # ======== ROTAS DE AÇÕES SOBRE CONSULTA ========
@@ -235,6 +338,7 @@ def finalizar_consulta(consulta_id):
 
     flash("Consulta finalizada com sucesso!")
     return redirect(url_for("consulta_detalhes", consulta_id=consulta_id))
+
 
 
 @app.route("/consulta/<consulta_id>/adiar", methods=["POST"])
@@ -259,6 +363,7 @@ def adiar_consulta(consulta_id):
     return redirect(url_for("consulta_detalhes", consulta_id=consulta_id))
 
 
+
 @app.route("/consulta/<consulta_id>/cancelar", methods=["POST"])
 def cancelar_consulta(consulta_id):
     """Cancela uma consulta."""
@@ -273,6 +378,7 @@ def cancelar_consulta(consulta_id):
 
     flash("Consulta cancelada com sucesso!")
     return redirect(url_for("consulta_detalhes", consulta_id=consulta_id))
+
 
 
 # ======== EXECUÇÃO DO APP ========

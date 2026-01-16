@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Consulta | Fila Zero</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- CSS base do dashboard -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-style.css') }}">
+</head>
+<body>
+
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h1 class="logo">Fila<span>Zero</span></h1>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('principal') }}">Principal</a></li>
+                <li><a href="{{ url_for('consultas') }}">Consultas</a></li>
+                {% if user_papel == "admin" %}
+                    <li><a href="{{ url_for('register') }}">Registrar Usuário</a></li>
+                {% endif %}
+                <li class="active"><a href="{{ url_for('registrar_consultas') }}">Registrar Consulta</a></li>
+            </ul>
+        </nav>
+        <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
+    </aside>
+
+    <!-- Conteúdo principal -->
+    <main class="main-content">
+        <header>
+            <h2>Registrar Nova Consulta</h2>
+            <p>Preencha os dados do paciente e do atendimento</p>
+        </header>
+
+        <!-- Formulário -->
+        <section class="form-section">
+            <form action="{{ url_for('registrar_consulta_action') }}" method="POST" class="form-card">
+
+                <div class="form-group">
+                    <label for="nome_paciente">Nome do Paciente</label>
+                    <input type="text" name="nome_paciente" id="nome_paciente" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cpf_paciente">CPF</label>
+                    <input type="text" name="cpf_paciente" id="cpf_paciente" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <input type="text" name="telefone" id="telefone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipo_consulta">Tipo de Consulta</label>
+                    <input type="text" name="tipo_consulta" id="tipo_consulta" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="data_hora">Data e Hora</label>
+                    <input type="datetime-local" name="data_hora" id="data_hora" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        Registrar Consulta
+                    </button>
+                    <a href="{{ url_for('consultas') }}" class="btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+
+            </form>
+        </section>
+    </main>
+</div>
+
+</body>
+</html>

@@ -45,6 +45,19 @@ class User:
             ativo=data.get("ativo", True),
             criado_em=data.get("criado_em")
         )
+    
+    def to_dict(self):
+        data = {
+            "nome": self.nome,
+            "email": self.email,
+            "senha_hash": self.senha_hash,
+            "papel": self.papel,
+            "ativo": self.ativo,
+            "criado_em": self.criado_em
+        }
+        if self.id:
+            data["_id"] = self.id
+        return data
 
     # ===============================
     # Autenticação

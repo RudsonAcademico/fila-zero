@@ -16,6 +16,10 @@
             <ul>
                 <li><a href="{{ url_for('principal') }}">Principal</a></li>
                 <li><a href="{{ url_for('consultas') }}">Consultas</a></li>
+                {% if user_papel == "admin" %}
+                    <li><a href="{{ url_for('register') }}">Registrar Usuário</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('registrar_consultas') }}">Registrar Consulta</a></li>
             </ul>
         </nav>
         <a href="{{ url_for('logout') }}" class="btn-logout">Sair</a>
