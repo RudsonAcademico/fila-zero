@@ -5,9 +5,9 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 from bson import ObjectId
 
+from jobs.atualizar_atrasadas import atualizar_consultas_atrasadas
 from repositories.consulta_repository import ConsultaRepository
 from repositories.user_repository import UserRepository
-from jobs.atualizar_atrasadas import atualizar_consultas_atrasadas
 from models.consulta import Consulta
 from models.user import User
 
@@ -191,10 +191,10 @@ def register():
     if session.get("user_papel") != "admin":
         flash("Acesso restrito a administradores")
         return redirect(url_for("principal"))
+    
 
     return render_template(
-        "register.html",
-        user_nome=session.get("user_nome")
+        "register.html"
     )
 
 
@@ -252,7 +252,7 @@ def register_action():
     )
 
     user_repository.salvar(funcionario)
-
+    flash("Funcionario Cadastrado Com Sucesso")
     return redirect(url_for("register"))
 
 

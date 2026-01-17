@@ -205,6 +205,8 @@ th {
 
 .day-content {
     padding: 10px;
+    display: flex;
+    flex-direction: column;
 }
 
 .mini-card {
@@ -347,3 +349,109 @@ th {
     border-radius: 5px;
     outline: none;
 }
+
+
+
+
+
+
+/* Centraliza o card de registro e ajusta o formulário */
+.main-content .card {
+    margin: 0 auto; /* Centraliza horizontalmente */
+    text-align: left; 
+    padding: 30px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #004d40;
+    font-size: 14px;
+}
+
+.form-group input, 
+.form-group select {
+    padding: 12px;
+    border: 2px solid #b2dfdb;
+    border-radius: 8px;
+    outline: none;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+    border-color: #00796b;
+}
+
+
+.flash-messages {
+    list-style: none;
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    border-left: 5px solid #d32f2f;
+}
+
+/* Botão Primário (Azul esverdeado para seguir aquele padrão de hospital que combinamos) */
+.btn-primary {
+    background-color: #00796b;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #004d40;
+}
+
+/* --- Ajustes Específicos para Registrar Consulta --- */
+
+/* Transforma o formulário em um card branco centralizado(meio obvio) */
+.form-card {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+    align-items: center;
+}
+
+
+.btn-secondary {
+    color: #00796b;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    color: #d32f2f; /* Fica vermelho ao passar o mouse para indicar cancelamento (pra deixar mais chique)*/
+}
+
+
+input[type="datetime-local"] {
+    width: 100%;
+}
+
